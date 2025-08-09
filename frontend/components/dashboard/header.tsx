@@ -14,12 +14,15 @@ import { Badge } from '@/components/ui/badge'
 import { Bell, Search, Settings, LogOut, User } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
 
 export function Header() {
   const router = useRouter()
+  const { user, logout } = useAuth()
 
   const handleSignOut = () => {
-    router.push('/')
+    logout()
+    router.push('/login')
   }
 
   return (
@@ -49,7 +52,7 @@ export function Header() {
                 <Avatar className="h-8 w-8">
                   <AvatarImage src="/placeholder.svg" alt="User" />
                   <AvatarFallback>
-                    JD
+                    {user?.name?.charAt(0)?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -58,10 +61,10 @@ export function Header() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium leading-none">
-                    John Doe
+                    {user?.name || 'User'}
                   </p>
                   <p className="text-xs leading-none text-muted-foreground">
-                    john@example.com
+                    {user?.email || 'user@example.com'}
                   </p>
                 </div>
               </DropdownMenuLabel>

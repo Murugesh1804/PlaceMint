@@ -9,48 +9,48 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Target, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { useToast } from '@/hooks/use-toast'
-import { authAPI } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
+import { AuthDebug } from '@/components/auth-debug'
 
 export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setIsLoading(true)
 
     try {
-      const response = await axios.post(`http://localhost:5000/api/auth/login`,
-        { email, password },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      )
-
-      if (response.data.success) {
-        // Store token in localStorage
-        localStorage.setItem('token', response.data.data.token)
-
+      console.log('Attempting login...')
+      const success = await login(email, password);
+      
+      if (success) {
+        console.log('Login successful, redirecting to dashboard...')
         toast({
           title: 'Success',
           description: 'Welcome back!',
-        })
-        router.push('/dashboard')
+        });
+        setTimeout(() => {
+          router.replace('/dashboard');
+        }, 100);
+      } else {
+        console.log('Login failed')
+        toast({
+          title: 'Error',
+          description: 'Invalid email or password. Please try again.',
+          variant: 'destructive',
+        });
       }
     } catch (error: any) {
+      console.error('Login error:', error)
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Invalid email or password. Please try again.',
+        description: 'Login failed. Please try again.',
         variant: 'destructive',
-      })
-    } finally {
-      setIsLoading(false)
+      });
     }
   }
 
@@ -129,9 +129,8 @@ export default function LoginPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                disabled={isLoading}
               >
-                {isLoading ? 'Signing in...' : 'Sign in'}
+                Sign in
               </Button>
             </form>
 
@@ -147,6 +146,7 @@ export default function LoginPage() {
           </CardContent>
         </Card>
       </div>
+      <AuthDebug />
     </div>
   )
 }

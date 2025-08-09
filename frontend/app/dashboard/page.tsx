@@ -22,6 +22,7 @@ import {
   Line,
 } from 'recharts'
 import { FileText, Building2, Calendar, TrendingUp, Target, Clock, CheckCircle, XCircle, Plus } from 'lucide-react'
+import { AuthDebug } from '@/components/auth-debug'
 
 const applicationData = [
   { month: 'Jan', applications: 12, interviews: 3, offers: 1 },
@@ -373,6 +374,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+      <AuthDebug />
     </div>
   )
 }

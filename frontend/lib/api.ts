@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create axios instance with default config
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',
+  baseURL: 'http://localhost:5000/api',
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
@@ -29,14 +29,29 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+    console.error('API Error:', error.response?.data || error.message);
+    
     if (error.response?.status === 401) {
       // Handle unauthorized access
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
 );
+
+// Utility function to handle API errors
+export const handleApiError = (error: any) => {
+  if (error.response?.data?.message) {
+    return error.response.data.message;
+  }
+  if (error.message) {
+    return error.message;
+  }
+  return 'An unexpected error occurred';
+};
 
 // Auth API calls
 export const authAPI = {
@@ -47,6 +62,8 @@ export const authAPI = {
     api.post('/auth/login', data),
   
   getMe: () => api.get('/auth/me'),
+  
+  logout: () => api.post('/auth/logout'),
   
   updateProfile: (data: any) => api.put('/auth/profile', data),
   

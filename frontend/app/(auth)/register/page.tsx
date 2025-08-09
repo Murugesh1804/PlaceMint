@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Target, Eye, EyeOff } from 'lucide-react'
 import { useToast } from '@/hooks/use-toast'
-import { authAPI } from '@/lib/api'
+import { useAuth } from '@/lib/auth-context'
 import Link from 'next/link'
 
 export default function RegisterPage() {
@@ -20,9 +20,9 @@ export default function RegisterPage() {
   })
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
   const { toast } = useToast()
+  const { register } = useAuth()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -54,30 +54,32 @@ export default function RegisterPage() {
       return
     }
 
-    setIsLoading(true)
-
     try {
-      const response = await authAPI.register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-      })
+      const success = await register(
+        formData.name,
+        formData.email,
+        formData.password
+      )
 
-      if (response.data.success) {
+      if (success) {
         toast({
           title: 'Success',
-          description: 'Account created successfully! Please sign in.',
+          description: 'Account created successfully!',
         })
-        router.push('/login')
+        router.push('/dashboard')
+      } else {
+        toast({
+          title: 'Error',
+          description: 'Registration failed. Please try again.',
+          variant: 'destructive',
+        })
       }
     } catch (error: any) {
       toast({
         title: 'Error',
-        description: error.response?.data?.message || 'Registration failed. Please try again.',
+        description: 'Registration failed. Please try again.',
         variant: 'destructive',
       })
-    } finally {
-      setIsLoading(false)
     }
   }
 
@@ -195,9 +197,8 @@ export default function RegisterPage() {
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                disabled={isLoading}
               >
-                {isLoading ? 'Creating account...' : 'Create account'}
+                Create account
               </Button>
             </form>
 
